@@ -1,0 +1,138 @@
+---
+title: "DIVVY BIKE SHARE ANALYSIS"
+author: "Shyam"
+date: "2025-02-19"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+##Introduction
+In this report, we will explore how the usage patterns of casual riders and annual members of the Cyclistic bike-share service differ. The goal is to uncover insights that can inform marketing and service strategies.
+
+
+
+##Executive Summary
+This report aims to analyze the differences between casual riders (customers) and annual members of the Cyclistic bike-share program. The analysis explores various factors such as trip duration, preferred times, and station usage to help understand usage patterns and suggest business recommendations.
+
+##Business Task
+The business objective is to analyze how casual riders and annual members use Cyclistic bikes differently. Insights gained from this analysis will guide the marketing and business strategy, focusing on converting casual riders into annual members.
+
+## Data Preparation
+The analysis uses bike-share trip data from Cyclistic for **2019 Q1 and 2020 Q1**. The data was cleaned by:
+- Removing records with 0 trip duration.
+- Standardizing the columns from both datasets to merge them for analysis.
+
+tripduration: Duration of the trip (in minutes).
+usertype: Whether the rider is a "member" (annual member) or "customer" (casual rider).
+start_time, end_time: Start and end times of the trip.
+
+The following columns were key to our analysis:
+- `tripduration`: Duration of the trip (in minutes).
+- `usertype`: Whether the rider is a "member" (annual member) or "customer" (casual rider).
+- `start_time`, `end_time`: Start and end times of the trip.
+
+```{r}
+# Load necessary libraries and data
+library(dplyr)
+library(ggplot2) 
+```
+
+# Load and combine datasets (ensure data files are in the correct path)
+```{r load-data}
+
+Divvy_2019 <- read_excel("C:/Users/subed/Downloads/Divvy_Trips_2019_Q1.xlsx")
+Divvy_2020 <- read_excel("C:/Users/subed/Downloads/Divvy_Trips_2020_Q1.xlsx")
+
+
+```
+
+# Combine the datasets
+```{r}
+Divvy_combined <- bind_rows(Divvy_2019, Divvy_2020)
+```
+
+# Check the combined data
+```{r}
+head(Divvy_combined)
+```
+
+
+Trip Duration Analysis
+This section analyzes the trip durations for both casual riders and annual members.
+# Trip duration analysis code
+```{r}
+summary(Divvy_combined$tripduration)
+```
+
+Time of Day Analysis
+In this section, we will explore when during the day the different user types are most active
+# Create a new column for the hour of the day when the trip started
+```{r}
+Divvy_combined$start_hour <- as.numeric(format(as.POSIXct(Divvy_combined$start_time), "%H"))
+```
+
+# Plot time of day usage
+```{r}
+ggplot(Divvy_combined, aes(x = start_hour, fill = usertype)) + 
+  geom_bar(position = "dodge") +
+  labs(title = "Usage by Time of Day", x = "Hour of the Day", y = "Number of Trips")
+```
+
+Day of Week Analysis
+This section examines the day of the week when casual riders and members use the bikes the most.
+# Create a new column for the day of the week
+```{r}
+Divvy_combined$day_of_week <- weekdays(as.Date(Divvy_combined$start_time))
+```
+# Plot day of the week usage
+```{rg}
+ggplot(Divvy_combined, aes(x = day_of_week, fill = usertype)) + 
+  geom_bar(position = "dodge") +
+  labs(title = "Usage by Day of the Week", x = "Day of the Week", y = "Number of Trips") 
+```
+  
+  End Station Preferences
+In this section, we analyze the most popular stations for each user type (casual vs. member).
+# End station preferences analysis code
+```{r}
+customer_end_stations <- Divvy_combined %>%
+  filter(usertype == "Customer") %>%
+  group_by(to_station_name) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+member_end_stations <- Divvy_combined %>%
+  filter(usertype == "Member") %>%
+  group_by(to_station_name) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+```
+# Display top 10 end stations for casual riders
+```{r}
+head(customer_end_stations, 10)
+```
+# Display top 10 end stations for members
+```{r}
+head(member_end_stations, 10)
+```
+Conclusion
+This analysis has highlighted key differences between casual riders and annual members. For example:
+
+Casual riders tend to ride longer, especially on weekends, while annual members prefer short, consistent rides.
+Peak usage times differ for both groups, with casual riders using bikes more on Sundays and members on weekdays.
+
+Recommendations:
+For casual riders: Tailor promotions and incentives for weekday usage, perhaps offering discounts for weekday rides to boost engagement.
+For annual members: Improve station availability near key work or commuting areas to optimize convenience for members.
+Station placement: Based on end station preferences, consider adding more stations at popular destinations for casual riders while focusing on work-related areas for members.
+
+
+### Steps:
+1. **Load the data** from your CSV files and combine it (`Divvy_combined`).
+2. **Analyze trip durations** and produce summary statistics.
+3. **Time of day usage**: Explore when the bikes are used.
+4. **Day of week analysis**: See which days are busiest for each group.
+5. **End station preferences**: Find the most popular stations for casual riders and members.
+
+
